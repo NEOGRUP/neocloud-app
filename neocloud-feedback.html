@@ -1,0 +1,145 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-input/paper-textarea.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../paper-button/paper-button.html">
+
+<link rel="import" href="neocloud-jwt-behaviour.html">
+<link rel="import" href="neocloud-behaviour.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="neocloud-feedback">
+  <template>
+    <style include="shared-styles">
+      .page-container {
+        width: 100%;
+      }
+
+      @media (min-width: 780px) and (max-width: 1659px) {
+        .page-container {
+          max-width: 760px;
+        }
+      }
+
+      @media (min-width: 1660px) {
+        .page-container {
+          max-width: 1460px;
+          /*background-color: #00AA8D;*/
+        }
+      }
+
+      paper-card{
+        width: 100%;
+        padding: 20px;
+      }
+
+      .divButtons {
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+      }
+    </style>
+
+    <iron-ajax
+            id="postFeedback"
+            method="post"
+            url="{{_getDomain()}}/api/v1/login/feedback"
+            headers="{{_getHeaders(storedUser)}}"
+            content-type="application/json"
+            handle-as="json"
+            loading="{{loading}}"
+            on-response="_handlePostFeedbackResponse"
+            on-error="_handleErrorAjax"></iron-ajax>
+
+    <iron-localstorage name="user-storage" value="{{storedUser}}"></iron-localstorage>
+
+    <paper-progress indeterminate disabled="{{!loading}}"></paper-progress>
+
+    <div class="page-container-main">
+      <div class="page-container">
+        <paper-card>
+          <h2>{{localize('LOYALTY_FEEDBACK_TITLE')}}</h2>
+          <p>{{localize('LOYALTY_FEEDBACK_SUBTITLE')}}</p>
+
+          <p id="errorDiv" class="alert-error" hidden$="[[hideErrorDesc]]">[[errorDesc]]</p>
+
+          <paper-textarea id="message" label="{{localize('LOYALTY_FEEDBACK_INPUT_MESSAGE')}}" required error-message="{{localize('LOYALTY_FEEDBACK_INPUT_ERROR_REQUIRED')}}" value="{{dataFeedback.message}}" rows="2"></paper-textarea>
+
+          <div class="divButtons">
+            <paper-button raised disabled$="[[loading]]" on-tap="_postFeedback">{{localize('LOYALTY_FEEDBACK_BUTTON_SEND')}}</paper-button>
+          </div>
+        </paper-card>
+      </div>
+    </div>
+
+  </template>
+  <script>
+    class NeocloudFeedback extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], loyaltyBehavior(jwtBehavior(Polymer.Element))) {
+      static get is() {
+        return 'neocloud-feedback';
+      }
+
+      static get properties() {
+        return {
+          language: String,
+          route: {
+            type: Object
+          },
+          routeData: {
+            type: Object
+          },
+          selectedTab: {
+            type: String,
+            notify: true,
+            value: 0
+          },
+          hideErrorDesc: {
+            type: Boolean,
+            value: true
+          },
+
+          dataFeedback: {
+            type: Object,
+            value: {
+              message: ""
+            }
+          },
+          errorDesc: String,
+          urlFeedback: String,
+          loading: {
+            type: Boolean,
+            value: false
+          }
+        }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.useKeyIfMissing = true;
+        this.loadResources(this.resolveUrl('/api/v1/i18n/loyalty'));
+        this.dispatchEvent(new CustomEvent('loaded', {bubbles: true, composed: true }));
+      }
+
+      _postFeedback(){
+        if (this._validate()) {
+          let content = {};
+          content.message = this.dataFeedback.message;
+          content.url = this.urlFeedback;
+          this.$.postFeedback.body = JSON.stringify(content);
+          this.$.postFeedback.generateRequest();
+        }
+      }
+
+      _handlePostFeedbackResponse(){
+        this.dataFeedback = {};
+        this.hideErrorDesc = true;
+        this.errorDesc = "";
+        this.fire('openToast',{text: this.localize('LOYALTY_FEEDBACK_MESSAGE_SUCCESS')});
+      }
+    }
+    window.customElements.define(NeocloudFeedback.is, NeocloudFeedback);
+
+  </script>
+</dom-module>
+

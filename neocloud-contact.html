@@ -1,0 +1,74 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+
+
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="neocloud-contact">
+  <template>
+    <style include="shared-styles">
+      .page-container {
+        width: 100%;
+      }
+
+      @media (min-width: 780px) and (max-width: 1659px) {
+        .page-container {
+          max-width: 760px;
+        }
+      }
+
+      @media (min-width: 1660px) {
+        .page-container {
+          max-width: 1460px;
+          /*background-color: #00AA8D;*/
+        }
+      }
+
+      paper-card{
+        width: 100%;
+        padding: 20px;
+      }
+
+    </style>
+
+    <div class="page-container-main">
+      <div class="page-container">
+        <paper-card>
+          <p class="bolder">NEO GRUP MANAGEMENT, S.L.</p>
+          <p>C/ Gran Via de les Corts Catalanes, 751 Bloque A, 1º, 2ª</p>
+          <p>08013 Barcelona Spain </p>
+          <p>Tel. 932 440 620</p>
+          <p>info@neogrup.com</p>
+          <p>© 2017 NEO GRUP MANAGEMENT, S.L. Todos los derechos reservados. </p>
+        </paper-card>
+      </div>
+    </div>
+
+  </template>
+  <script>
+    class NeocloudContact extends Polymer.Element {
+      static get is() {
+        return 'neocloud-contact';
+      }
+
+      static get properties() {
+        return {
+          language: String,
+          route: {
+            type: Object
+          },
+          routeData: {
+            type: Object
+          }
+        }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.dispatchEvent(new CustomEvent('loaded', {bubbles: true, composed: true }));
+      }
+    }
+    window.customElements.define(NeocloudContact.is, NeocloudContact);
+  </script>
+</dom-module>
+

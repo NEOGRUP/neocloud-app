@@ -1,0 +1,68 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icons/social-icons.html">
+<link rel="import" href="../iron-icons/communication-icons.html">
+
+
+<dom-module id="neocloud-app-menu-item">
+  <template>
+    <style>
+      :host{
+        display: block;
+        --app-primary-color: #212121;
+        --app-accent-color: #FF9800;
+      }
+
+      a.parentLink,a.childLink,a.noLink, a.link{
+        display: block;
+        padding: 0 20px;
+        text-decoration: none;
+        outline: none;
+        line-height: 30px;
+        color: var(--app-primary-color);
+      }
+
+      a.noLink{
+        pointer-events: none;
+        cursor: default;
+      }
+
+      a.childLink{
+        padding: 0 40px;
+      }
+
+
+      a.iron-selected {
+        color: var(--app-accent-color);
+        font-weight: bold;
+        border-left: 2px solid var(--app-accent-color);
+      }
+    </style>
+
+    <a name="[[name]]" class$="[[className]]" href="[[rootPath]][[name]]"><iron-icon icon="[[icon]]"></iron-icon>[[text]]</a>
+
+  </template>
+  <script>
+    class NeocloudAppMenuItem extends Polymer.Element {
+      static get is() {
+        return 'neocloud-app-menu-item';
+      }
+
+      static get properties() {
+        return {
+          language: String,
+          name: String,
+          className: String,
+          icon: String,
+          text: String
+        }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+      }
+    }
+    window.customElements.define(NeocloudAppMenuItem.is, NeocloudAppMenuItem);
+  </script>
+</dom-module>
+

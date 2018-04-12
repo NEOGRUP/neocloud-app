@@ -1,0 +1,579 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../app-layout/app-header/app-header.html">
+<link rel="import" href="../app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../app-route/app-location.html">
+<link rel="import" href="../app-route/app-route.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="../iron-selector/iron-selector.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icons/social-icons.html">
+<link rel="import" href="../iron-icons/communication-icons.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-progress/paper-progress.html">
+<link rel="import" href="../paper-spinner/paper-spinner.html">
+<link rel="import" href="../paper-toast/paper-toast.html">
+
+
+<link rel="import" href="neocloud-jwt-behaviour.html">
+<link rel="import" href="neocloud-profile.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="neocloud-app">
+  <template>
+    <style include="shared-styles">
+      :host {
+        color: #fff;
+        --app-primary-color: #212121;
+        --app-secondary-color: #253855;
+        --app-accent-color: #FF9800;
+        --app-bg-color: #EEEEEE;
+        --app-tabs-color: #F5F5F5;
+
+        --error-color: #F44336;
+        --paper-input-container-focus-color: var(--app-secondary-color);
+
+        --app-drawer-width: 200px;
+        display: block;
+      }
+
+      app-header {
+        background-color: var(--app-secondary-color);
+      }
+
+      app-toolbar{
+        height: 60px;
+      }
+
+      app-drawer {
+        --app-drawer-content-container: {
+          background-color: #FAFAFA;
+        }
+
+      }
+
+      app-drawer-layout:not([narrow]) [drawer-toggle] {
+        display: none;
+      }
+
+      app-header paper-icon-button {
+        --paper-icon-button-ink-color: white;
+      }
+
+      .menu-logo{
+        height: 60px;
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        background-color: var(--app-secondary-color);
+      }
+
+      .menu-logo img{
+        height: 100%;
+        margin-left: 20px;
+      }
+
+      .drawer-list {
+        margin: 0 20px;
+      }
+
+      .drawer-list a.parentLink,a.childLink,a.noLink, a.link{
+        display: block;
+        padding: 0 20px;
+        text-decoration: none;
+        outline: none;
+        line-height: 30px;
+        color: var(--app-primary-color);
+      }
+
+      .drawer-list a.noLink{
+        pointer-events: none;
+        cursor: default;
+      }
+
+      .drawer-list a.childLink{
+        padding: 0 40px;
+      }
+
+      .drawer-list a.link {
+        line-height: 25px;
+      }
+
+      .drawer-list a.link:hover {
+        text-decoration: underline;
+      }
+
+
+      .drawer-list a.iron-selected {
+        color: var(--app-accent-color);
+        font-weight: bold;
+        border-left: 2px solid var(--app-accent-color);
+      }
+
+      .menu-items{
+        overflow: auto;
+        height: 100%;
+      }
+
+      .notification-container{
+        display: inline-block;
+        position: relative;
+        padding: 2px 5px;
+        cursor: pointer;
+      }
+
+      .notification-number {
+        background-color: var(--error-color);
+        width: 22px;
+        height: 22px;
+        -moz-border-radius: 11px;
+        -webkit-border-radius: 11px;
+        border-radius: 11px;
+        font-size: 12px;
+        position: absolute; /* Position the badge within the relatively positioned button */
+        top: 0px;
+        right: 5px;
+        border: 1px solid white;
+      }
+
+      .menu-language{
+        margin-top: 50px;
+        padding-left: 20px;
+        color: var(--app-primary-color);
+      }
+
+      .menu-legal{
+        margin-top: 20px;
+        padding-top: 20px;
+        color: var(--app-primary-color);
+        border-top: 1px solid #BDBDBD;
+      }
+
+      .spinnerLoading{
+        text-align: center;
+        position: relative;
+        top: 40%;
+      }
+
+    </style>
+
+    <!-- <neocloud-appconfig url="/accounts/appconfig.json"></neocloud-appconfig>
+    <neocloud-ganalytics></neocloud-ganalytics> -->
+
+    <iron-localstorage id="userStorage" name="user-storage" value="{{storedUser}}"></iron-localstorage>
+
+    <iron-ajax id="getNotificationsCount"
+        auto
+        url="{{_getDomain()}}/api/v1/shops/notifications"
+        params='{"count":"true"}'
+        headers="{{_getHeaders(storedUser)}}"
+        method="get"
+        handle-as="json"
+        last-response="{{dataNotificationsCount}}"
+        on-response="_handleGetNotificationsCountResponse">
+    </iron-ajax>
+
+    <app-location
+        route="{{route}}"
+        url-space-regex="^[[rootPath]]">
+    </app-location>
+
+    <app-route
+        route="{{route}}"
+        pattern="[[rootPath]]:page"
+        data="{{routeData}}"
+        tail="{{subroute}}">
+    </app-route>
+
+    <app-drawer-layout fullbleed responsive-width="950px" narrow="{{narrow}}">
+      <!-- Drawer content -->
+      <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
+
+        <div class="menu-items">
+          <div class="menu-logo">
+            <img src="/loyalty/images/cloud.svg" title="NeoCloud Loyalty">
+            <div>[[appTitle]]</div>
+          </div>
+          <template is="dom-if" if="{{storedUser}}">
+            <neocloud-profile language="{{language}}"></neocloud-profile>
+          </template>
+
+          <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+
+            <slot id="menu" name="menu" slot="menu"></slot>
+
+            <a name="notifications" class="parentLink" href="[[rootPath]]notifications"><iron-icon icon="social:notifications"></iron-icon>{{localize('NEOCLOUD_APP_MENU_NOTIFICATIONS')}}</a>
+            <a name="contact" class="parentLink" href="[[rootPath]]contact"><iron-icon icon="info"></iron-icon>{{localize('NEOCLOUD_APP_MENU_CONTACT')}}</a>
+            <a name="feedback" class="parentLink" on-tap="_feedback" style="cursor:pointer"><iron-icon icon="communication:textsms"></iron-icon>{{localize('NEOCLOUD_APP_MENU_FEEDBACK')}}</a>
+            <div class="menu-language">
+                <iron-icon icon="language"></iron-icon>
+                <select id="languageSelector" on-change="_changeLanguage">
+                  <option value="es">Español</option>
+                  <option value="en">English</option>
+                  <!--<option value="ca">Català</option>-->
+                </select>
+              </div>
+
+              <div class="menu-legal small">
+                <a name="legal" class="link" target="_blank" href="/accounts/legal.html">{{localize('NEOCLOUD_APP_MENU_LEGAL')}}</a>
+                <a name="privacy-policy" class="link" target="_blank" href="/accounts/privacity-policy.html">{{localize('NEOCLOUD_APP_MENU_PRIVACY_POLICY')}}</a>
+                </select>
+              </div>
+          </iron-selector>
+        </div>
+      </app-drawer>
+
+      <!-- Main content -->
+      <app-header-layout has-scrolling-region>
+
+        <app-header slot="header" condenses reveals effects="waterfall">
+          <app-toolbar>
+            <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+            <div main-title class="ellipsis">
+              <p style="margin: 0" class="textTruncated">{{pageTitle}}</p>
+              <p style="margin: 0" class="medium textTruncated">{{pageSubTitle}}</p>
+            </div>
+            <div class="toolbar-buttons" hidden$="[[!storedUser]]">
+              <paper-icon-button icon="refresh" title="{{localize('NEOCLOUD_APP_TOOLBAR_ICON_REFRESH')}}" on-tap="_refresh"></paper-icon-button>
+              <div class="notification-container" on-tap="_showNotifications">
+                <paper-icon-button icon="social:notifications" title="{{localize('NEOCLOUD_APP_TOOLBAR_ICON_NOTIFICATIONS')}}"></paper-icon-button>
+                <div class="notification-number bolder" hidden$="{{noNotification}}">
+                  <div style="line-height: 22px; width: 22px;text-align: center">[[dataNotificationsCount.data.notificationsCount]]</div>
+                </div>
+              </div>
+            </div>
+
+          </app-toolbar>
+        </app-header>
+
+        <template is="dom-if" if="{{loading}}">
+          <paper-progress indeterminate></paper-progress>
+          <div class="spinnerLoading">
+            <paper-spinner active></paper-spinner>
+          </div>
+
+        </template>
+
+        <iron-pages
+            selected="[[page]]"
+            attr-for-selected="name"
+            fallback-selection="view404"
+            role="main">
+          
+          <neocloud-notifications name="notifications" route="{{subroute}}" language="{{language}}"></neocloud-notifications>
+          <neocloud-contact name="contact" route="{{route}}" language="{{language}}"></neocloud-contact>
+          <neocloud-feedback name="feedback" route="{{route}}" language="{{language}}"  url-feedback="{{urlFeedback}}"></neocloud-feedback>
+          <neocloud-view404 name="view404"></neocloud-view404>
+        </iron-pages>
+      </app-header-layout>
+    </app-drawer-layout>
+    <paper-toast id="toast" class="fit-bottom"></paper-toast>
+    <neocloud-reject-notification-dialog
+            id="rejectNotificationDialog" language="{{language}}"></neocloud-reject-notification-dialog>
+  </template>
+
+  <script>
+    // Gesture events like tap and track generated from touch will not be
+    // preventable, allowing for better scrolling performance.
+    Polymer.setPassiveTouchGestures(true);
+
+    class NeocloudApp extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], jwtBehavior(Polymer.Element)) {
+      static get is() { return 'neocloud-app'; }
+
+      static get properties() {
+        return {
+          language: {
+            type: String,
+            value: 'es',
+            observer: '_languageChanged',
+          },
+
+          appTitle: {
+            type: String,
+            computed: '_appTitle(localize,x)'
+          },
+          pageTitle: {
+            type: String,
+            computed: '_pageTitle(page,localize,x)'
+          },
+          pageSubTitle: {
+            type: String,
+            computed: '_pageSubTitle(page,localize,x,subroute)'
+          },
+          x: {
+            type: String,
+            value: ""
+          },
+          route: {
+            type: Object
+          },
+          routeData: {
+            type: Object
+          },
+          page: {
+            type: String,
+            reflectToAttribute: true,
+            observer: '_pageChanged',
+          },
+          storedUser: {
+            type: String,
+            observer: '_storedUserChanged'
+          },
+          noNotification: {
+            type: Boolean,
+            value: true,
+            computed: '_noNotificationEval(dataNotificationsCount)'
+          },
+          loading: {
+            type: Boolean,
+            value: true
+          },
+          urlFeedback: String,
+          appRoutePathOrigin: {
+            type: String,
+            value: "shops"
+          },
+          // This shouldn't be neccessary, but the Analyzer isn't picking up
+          // Polymer.Element#rootPath
+          rootPath: String,
+        };
+      }
+
+      static get observers() {
+        return [
+          '_routePageChanged(routeData.page)',
+          '_routeChanged(route.*)',
+          '_locationChanged(route)'
+        ];
+      }
+
+      connectedCallback(){
+        super.connectedCallback();
+
+        console.log(this.rootPath);
+
+
+        this.addEventListener('setLanguage', this._setLanguage);
+        this.addEventListener('loaded', this._pageLoaded);
+        this.addEventListener('openToast', this._openToast);
+        this.addEventListener('openRejectNotification', this._openRejectNotification);
+        this.addEventListener('notificationRejected', this._notificationRejected);
+
+        let urlRedirect;
+        if (this.route.__queryParams.idToken) {
+          this.storedUser = this.route.__queryParams.idToken;
+          this.$.userStorage.save();
+
+          urlRedirect = 'contact'; /* TODO: must be the first page.... */
+          if (this.route.__queryParams.continue) {
+
+            urlRedirect = this.route.__queryParams.continue;
+          }
+          // window.location.href = urlRedirect;
+        }
+
+        this.addEventListener('updateNotifications', function (e) {
+          this._updateDataNotificationsCountNow();
+        });
+
+        this.useKeyIfMissing = true;
+        this.loadResources(this.resolveUrl('i18n/neocloud-app'));
+
+        this.$.toast.fitInto = this.$$('app-header-layout');
+      }
+
+      _storedUserChanged(){
+        if (this.storedUser === null){
+          let urlRedirect = this._getDomain() + '/accounts/sign-in' + '?continue=' + location.protocol + '//' + location.host + location.pathname;
+
+          if (this.route.__queryParams.usermail) {
+            urlRedirect = urlRedirect + '&usermail=' + this.route.__queryParams.usermail;
+          }
+
+          if (this.route.__queryParams.np) {
+            urlRedirect = urlRedirect + '&np=' + this.route.__queryParams.np;
+          }
+          
+          window.location.href = urlRedirect;
+        }
+      }
+
+      _noNotificationEval(dataNotificationsCount){
+        if (dataNotificationsCount){
+          return (dataNotificationsCount.data.notificationsCount == 0) ? true:false;
+        }
+        else{
+          return false;
+        }
+      }
+
+      _appTitle(localize, x) {
+        let title = "Neo Cloud";
+        // let domain = this._getDomain();
+        let domain = "";
+        let adomain = domain.split(".",1);
+        let pos = adomain[0].indexOf("cloud")+"cloud".length;
+        domain = adomain[0].slice(pos , pos+10  );
+        if (domain!="") domain = " "+domain;
+
+        return (title+domain);
+      }
+
+      _pageTitle(page, localize, x) {
+        let title = "";
+
+        title = localize(page);
+        return (title);
+      }
+
+      _pageSubTitle(page, localize, x, routeData) {
+        let subtitle = "";
+
+        return (subtitle);
+      }
+
+      _routePageChanged(page) {
+        // If no page was found in the route data, page will be an empty string.
+        // Default to 'accounts' in that case.
+        if (page){
+          this.page = page
+        }
+        else{
+          page = 'contact';
+          // this.set('route.path', '/loyalty/accounts');
+        }
+
+        // Close a non-persistent drawer when the page & route are changed.
+        if (!this.$.drawer.persistent) {
+          this.$.drawer.close();
+        }
+      }
+
+      _pageChanged(page) {
+        // Load page import on demand. Show 404 page if fails
+        const resolvedPageUrl = this.resolveUrl('loyalty-' + page + '.html');
+        Polymer.importHref(
+            resolvedPageUrl,
+            null,
+            this._showPage404.bind(this),
+            true);
+      }
+
+      _routeChanged(route) {
+        // this.shadowRoot.querySelector('neocloud-ganalytics').updateGoogleAnalytics();
+      }
+
+      _locationChanged(route){
+        if (route.path.startsWith('/accounts')){
+          location.reload();
+        }
+      }
+
+      _showPage404() {
+        this.page = 'view404';
+        this.loading = false;
+      }
+
+      _changeLanguage(){
+        this.language = this.$.languageSelector.value;
+        this._refresh();
+        if (!this.$.drawer.persistent) {
+          this.$.drawer.close();
+        }
+      }
+
+      _updateDataNotificationsCount() {
+        // Refrescar las notificaciones cada hora 3600000
+        this.async(function() {
+          this._updateDataNotificationsCountNow();
+        }, 3600000);
+      }
+
+      _updateDataNotificationsCountNow() {
+        this.$.getNotificationsCount.generateRequest();
+      }
+
+      _handleGetNotificationsCountResponse() {
+        this._updateDataNotificationsCount();
+      }
+
+      _showNotifications(){
+        this._updateDataNotificationsCountNow();
+        this.set('route.path', '/loyalty/notifications');
+        this._refresh();
+      }
+
+      _languageChanged(){
+        let languageSelector = this.$.languageSelector;
+        for(let i = 0; i < languageSelector.length; i++) {
+          if(languageSelector.options[i].value === this.language) {
+            languageSelector.selectedIndex = i;
+            break;
+          }
+        }
+      }
+
+      /* Events */
+      _setLanguage(e){
+        let languageSelector = this.$.languageSelector;
+        let languages = new Array();
+        for (let i = 0; i < languageSelector.length; i++) {
+          languages.push(languageSelector.options[i].value);
+        }
+
+        let language = (languages.includes(e.detail.language)) ? e.detail.language : 'es';
+        this.language=language;
+      }
+
+      _refresh(){
+        //Polymer.dom(this.root).querySelector('loyalty-notifications').refresh();
+        // equivalent
+        if(typeof this.shadowRoot.querySelector('loyalty-' + this.page).refresh != 'undefined') {
+          this.shadowRoot.querySelector('loyalty-' + this.page).refresh();
+        }
+        this._updateDataNotificationsCountNow();
+      }
+
+      _pageLoaded(){
+        this.loading = false;
+      }
+
+      _feedback(){
+        this.urlFeedback = window.location.href;
+        this.set('route.path', '/loyalty/feedback');
+      }
+
+       _openRejectNotification(e){
+        this.$.rejectNotificationDialog.set('notification.id', e.detail.notification.id);
+        this.$.rejectNotificationDialog.open();
+      }
+
+      _openToast(e){
+        this.$.toast.text = e.detail.text;
+        this.$.toast.open();
+      }
+
+      _notificationRejected(){
+        this._refresh();
+      }
+
+    }
+
+    window.customElements.define(NeocloudApp.is, NeocloudApp);
+  </script>
+</dom-module>

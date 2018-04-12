@@ -1,0 +1,147 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../neon-animation/web-animations.html">
+<link rel="import" href="../neon-animation/neon-animations.html">
+
+<link rel="import" href="neocloud-jwt-behaviour.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="neocloud-reject-notification-dialog">
+  <template>
+    <style include="shared-styles">
+
+      paper-dialog {
+        width: 400px;
+      }
+
+      .header {
+        color: var(--error-color);
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
+
+      iron-icon {
+        margin-right: 12px;
+      }
+
+      .buttons {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
+    </style>
+
+    <iron-localstorage name="user-storage" value="{{storedUser}}"></iron-localstorage>
+
+    <iron-ajax
+            id="respondInvitation"
+            url="{{_getDomain()}}/api/v1/shops/respondinvitation"
+            method="post"
+            headers="{{_getHeaders(storedUser)}}"
+            content-type="application/json"
+            handle-as="json"
+            loading="{{loading}}"
+            on-response="_handleRespondInvitationResponse"
+            on-error="_handleErrorAjax"></iron-ajax>
+
+    <paper-dialog id="rejectNotificationDialog" modal entry-animation="scale-up-animation">
+      <div class="header">
+        <iron-icon icon="warning"></iron-icon><h3>{{localize('LOYALTY_NOTIFICATIONS_REJECT_NOTIFICATION_DIALOG_TITLE')}}</h3>
+      </div>
+      <div class="content">
+        <p>{{localize('LOYALTY_NOTIFICATIONS_REJECT_NOTIFICATION_DIALOG_SUBTITLE')}}</p>
+        <p id="errorDiv" class="alert-error" hidden$="[[hideErrorDesc]]">[[errorDesc]]</p>
+      </div>
+      <div class="buttons">
+        <div hidden$="{{!loading}}">
+          <paper-spinner class="dialog" active></paper-spinner>
+        </div>
+        <paper-button raised dialog-dismiss disabled$="[[loading]]">{{localize('LOYALTY_NOTIFICATIONS_REJECT_NOTIFICATION_DIALOG_BUTTON_NO')}}</paper-button>
+        <paper-button raised disabled$="[[loading]]" on-tap="_rejectNotification">{{localize('LOYALTY_NOTIFICATIONS_REJECT_NOTIFICATION_DIALOG_BUTTON_YES')}}</paper-button>
+      </div>
+    </paper-dialog>
+
+  </template>
+
+  <script>
+    class NeocloudRejectNotificationDialog extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], jwtBehavior(Polymer.Element)) {
+      static get is() {
+        return 'neocloud-reject-notification-dialog';
+      }
+
+      static get properties() {
+        return {
+          language: {
+            type: String
+          },
+          formData: {
+            type: Object,
+            value: {
+              shopName:"",
+            }
+          },
+          role: String,
+          hideErrorDesc: {
+            type: Boolean,
+            value: true
+          },
+          errorDesc: String,
+          notification:{
+            type: Object,
+            notify: true,
+            reflectToAttribute: true,
+            value: {
+              id: ""
+            }
+          },
+          loading: {
+            type: Boolean,
+            value: false
+          }
+        }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.useKeyIfMissing = true;
+        this.loadResources(this.resolveUrl('/api/v1/i18n/loyalty'));
+      }
+
+      open(){
+        this.$.rejectNotificationDialog.open();
+        this.hideErrorDesc = true;
+        this.errorDesc = "";
+        this.formData = {};
+      }
+
+      _setReqBody() {
+        var content = {};
+        content.notification = this.notification.id;
+        content.state = 'decline'
+        this.$.respondInvitation.body = JSON.stringify(content);
+      }
+
+      _rejectNotification(){
+        this._setReqBody();
+        this.$.respondInvitation.generateRequest();
+      }
+
+      _handleRespondInvitationResponse(event) {
+        this.hideErrorDesc = true;
+        this.errorDesc = "";
+        this.$.rejectNotificationDialog.close();
+        this.dispatchEvent(new CustomEvent('openToast', {detail: {text: this.localize('LOYALTY_NOTIFICATIONS_MESSAGE_SUCCESS')}, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('updateNotifications', {bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('notificationRejected', {bubbles: true, composed: true }));
+      }
+
+    }
+    window.customElements.define(NeocloudRejectNotificationDialog.is, NeocloudRejectNotificationDialog);
+  </script>
+</dom-module>

@@ -1,0 +1,67 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.21.0/moment-with-locales.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/accounting.js/0.4.1/accounting.min.js"></script>
+<script>
+  /* @polymerMixin */
+  neocloudBehavior = function(baseClass) {
+    return class extends baseClass {
+      _validate(){
+        let inputs = Polymer.dom(this.root).querySelectorAll("paper-input,paper-textarea");
+        let firstInvalid = false;
+        let i;
+        for (i = 0; i < inputs.length; i++) {
+          inputs[i].validate();
+        }
+        for (i = 0; i < inputs.length; i++) {
+          if (!firstInvalid && inputs[i].invalid===true) {
+            inputs[i].focus();
+            firstInvalid = true;
+          }
+        }
+        return !firstInvalid;
+      }
+      
+      _formatDate(date, language, format) {
+        let lLanguage = (language) ? language : 'es';
+        moment.locale(lLanguage);
+        let lFormat = (format) ? format : "L";
+        let dateText = "";
+        if (date) {
+          dateText = moment(date).format(lFormat);
+        }
+        return dateText;
+      }
+
+      _formatDateTimeFromNow(dateTime, language) {
+        let lLanguage = (language) ? language : 'es';
+        moment.locale(lLanguage);
+        let dateTimeText = "";
+        if (dateTime) {
+          dateTimeText = moment(dateTime).calendar();
+        }
+        return dateTimeText;
+      }
+
+      _formatTime(time, language) {
+        let lLanguage = (language) ? language : 'es';
+        moment.locale(lLanguage);
+        let timeText = "";
+        if (time) {
+          timeText = moment.utc(time).format("HH:mm[h]");
+        }
+        return timeText;
+      }
+
+      _formatPrice(price) {
+        let priceText = ""
+        priceText = accounting.formatMoney(price, "€", 2, ".", ",","%v %s");
+        return priceText;
+      }
+
+      _formatNumber(number, decimals) {
+        let numberText = "";
+        numberText = accounting.formatNumber(number,decimals, ".", ",")
+        return numberText;
+      }
+    }
+  }
+</script>

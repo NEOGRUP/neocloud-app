@@ -1,0 +1,261 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../paper-item/paper-icon-item.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-button/paper-button.html">
+
+<link rel="import" href="neocloud-jwt-behaviour.html">
+<link rel="import" href="neocloud-behaviour.html">
+
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="neocloud-notifications">
+  <template>
+    <style include="shared-styles">
+      .page-container{
+        width: 100%;
+      }
+
+      @media (min-width: 780px) {
+        div.page-container {
+          max-width: 760px;
+        }
+      }
+
+      .notifications-list{
+        @apply --layout-vertical;
+      }
+
+      .notification-icon {
+        width: 24px;
+      }
+
+      .notification-content {
+        @apply --layout-horizontal;
+      }
+
+      .notification-message{
+        margin-left: 20px;
+        @apply --layout-flex;
+      }
+
+      .notification-actions-buttons{
+        @apply --layout-flex;
+        text-align: right;
+      }
+
+      .notification-actions {
+        width: 90px;
+        text-align: right;
+      }
+
+      paper-card{
+        width: 100%;
+        margin: 5px 5px 0 0;
+        padding: 5px;
+      }
+
+      .message{
+        padding: 5px;
+      }
+
+    </style>
+
+    <iron-localstorage name="user-storage" value="{{storedUser}}"></iron-localstorage>
+
+    <iron-ajax id="getNotifications"
+               auto
+               url="{{_getDomain()}}/api/v1/shops/notifications"
+               headers="{{_getHeaders(storedUser)}}"
+               method="get"
+               handle-as="json"
+               loading="{{loading}}"
+               last-response="{{dataNotifications}}"
+               on-response="_handlegetNotificationsResponse"
+               on-error="_handleErrorAjax">
+    </iron-ajax>
+
+    <iron-ajax
+            id="respondInvitation"
+            url="{{_getDomain()}}/api/v1/shops/respondinvitation"
+            method="post"
+            headers="{{_getHeaders(storedUser)}}"
+            content-type="application/json"
+            handle-as="json"
+            loading="{{loading}}"
+            last-response="{{responseInvitation}}"
+            on-response="_handleRespondInvitationResponse"
+            on-error="_handleErrorAjax"></iron-ajax>
+
+
+    <paper-progress indeterminate disabled="{{!loading}}"></paper-progress>
+
+    <div class="page-container-main">
+      <div class="page-container">
+        <div class="notifications-list">
+          <div hidden$="[[hideErrorDesc]]">
+            <paper-card>
+              <p id="errorDiv" class="alert-error" >[[errorDesc]]</p>
+            </paper-card>
+          </div>
+          <template is="dom-repeat" items="[[dataNotifications.data]]" rendered-item-count="{{renderedCount}}">
+            <paper-card>
+              <div class="notification-content">
+                <div class="notification-icon">
+                  <iron-icon icon="report" class$="[[_getNotificationTypeClassName(item.type)]]"></iron-icon>
+                </div>
+                <div class="notification-message">
+                  <div class="message">[[item.message]]</div>
+                  <div class="message">[[item.customMessage]]</div>
+
+                  <div class="notification-actions-buttons" hidden$="[[_hideDeclineButton(item.ambit)]]">
+                    <paper-button raised class="delete" disabled$="[[loading]]" on-tap="_declineInvitation">{{localize('LOYALTY_NOTIFICATIONS_BUTTON_REJECT')}}</paper-button>
+                    <paper-button raised dialog-dismiss disabled$="[[loading]]" on-tap="_acceptInvitation">{{localize('LOYALTY_NOTIFICATIONS_BUTTON_ACCEPT')}}</paper-button>
+                  </div>
+
+                  <div class="message small grey capitalize">[[_formatDateTimeFromNow(item.sysData.created,language)]] [[item.sender]]</div>
+                </div>
+                <div class="notification-actions" hidden$="[[!_hideDeclineButton(item.ambit)]]">
+                  <paper-icon-button icon="close" on-tap="_acceptInvitation"></paper-icon-button>
+                </div>
+              </div>
+
+            </paper-card>
+          </template>
+          <template is="dom-if" if="{{!renderedCount}}">
+            <paper-card>
+              <paper-item>
+              {{localize('LOYALTY_NOTIFICATIONS_MESSAGE_WITHOUT_NOTIFICATIONS')}}
+              </paper-item>
+            </paper-card>
+          </template>
+        </div>
+      </div>
+    </div>
+
+
+
+
+  </template>
+  <script>
+    class NeocloudNotifications extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], neocloudBehavior(jwtBehavior(Polymer.Element))) {
+      static get is() {
+        return 'neocloud-notifications';
+      }
+
+      static get properties() {
+        return {
+          language: String,
+          route: {
+            type: Object
+          },
+          routeData: {
+            type: Object
+          },
+          notificationId: String,
+          loading: {
+            type: Boolean,
+            value: false
+          },
+          hideErrorDesc: {
+            type: Boolean,
+            value: true
+          },
+          errorDesc: String
+        }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.useKeyIfMissing = true;
+        this.loadResources(this.resolveUrl('/api/v1/i18n/loyalty'));
+        this.dispatchEvent(new CustomEvent('loaded', {bubbles: true, composed: true }));
+      }
+
+      refresh(){
+        this.hideErrorDesc = true;
+        this.errorDesc = "";
+        this.$.getNotifications.generateRequest();
+      }
+
+      _handlegetNotificationsResponse(){
+        this.dispatchEvent(new CustomEvent('updateNotifications', {bubbles: true, composed: true }));
+      }
+
+      _getNotificationTypeClassName(notificationType){
+        let className = ""
+        switch (notificationType) {
+          case "welcome":
+            className = "blue";
+            break;
+          case "followShop":
+            className = "red";
+            break;
+          case "unfollowShop":
+            className = "red";
+            break;
+          case "changeShopRole":
+            className = "yellow";
+            break;
+          case "followShopGroup":
+            className = "red";
+            break;
+          case "unfollowShopGroup":
+            className = "red";
+            break;
+          case "changeShopGroupRole":
+            className = "yellow";
+            break;
+          case "assignLicense":
+            className = "blue";
+            break;
+          case "renewLicense":
+            className = "blue";
+            break;
+        }
+
+        className = className + " icon32";
+        return className;
+      }
+
+      _hideDeclineButton(ambit){
+        return (ambit=="account") ? true : false;
+      }
+
+      _acceptInvitation(e){
+        let model = e.model;
+        let content = {};
+
+        content.notification = model.item.id;
+        content.state = 'accept';
+
+        this.notificationId = model.item.id;
+
+        this.$.respondInvitation.body = JSON.stringify(content);
+        this.$.respondInvitation.generateRequest();
+      }
+
+      _declineInvitation(e){
+        let model = e.model;
+        let notification = {};
+        notification.id = model.item.id;
+        this.dispatchEvent(new CustomEvent('openRejectNotification', {detail: {notification: notification}, bubbles: true, composed: true }));
+      }
+
+      _handleRespondInvitationResponse(event) {
+        this.refresh();
+        this.dispatchEvent(new CustomEvent('openToast', {detail: {text: this.localize('LOYALTY_NOTIFICATIONS_MESSAGE_SUCCESS')}, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('updateNotifications', {bubbles: true, composed: true }));
+
+        let response = this.responseInvitation.data;
+      }
+    }
+    window.customElements.define(NeocloudNotifications.is, NeocloudNotifications);
+
+  </script>
+</dom-module>
+

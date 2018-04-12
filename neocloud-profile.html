@@ -1,0 +1,89 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../paper-avatar/paper-avatar.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+
+<link rel="import" href="neocloud-jwt-behaviour.html">
+<link rel="import" href="neocloud-log-out.html">
+
+<dom-module id="neocloud-profile">
+  <template>
+    <style include="shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+        position: relative;
+        color: var(--app-primary-color);
+        font-size: 14px;
+        border-bottom: 1px solid #BDBDBD;
+      }
+
+      .profile-content {
+        background-color: #FAFAFA;
+        padding: 0 10px;
+        height: 160px;
+        @apply --layout-vertical;
+        @apply --layout-center;
+      }
+
+      .textTruncated {
+        max-width: 170px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 20px;
+      }
+      .logout{
+        margin-top: 10px;
+      }
+
+      paper-avatar{
+        margin: 10px 0 5px 0;
+        --paper-avatar-size: 64px;
+        --paper-avatar-background: #FAFAFA;
+        --paper-avatar-disabled-background: #FAFAFA;
+      }
+
+    </style>
+
+    <iron-localstorage id="prueba" name="user-storage" value="{{storedUser}}"></iron-localstorage>
+
+    <iron-ajax id="getUserData"
+               auto
+               url="{{_getDomain()}}/api/v1/login/userdata"
+               headers="{{_getHeaders(storedUser)}}"
+               method="get"
+               handle-as="json"
+               last-response="{{dataUserData}}"
+               on-response="_handleResponseGetUserData"></iron-ajax>
+    </iron-ajax>
+
+    <div class="profile-content">
+      <paper-avatar image-src="[[dataUserData.data.avatarURL]]" disabled></paper-avatar>
+      <div class="textTruncated">[[dataUserData.data.name]]</div>
+      <!--<div class="textTruncated">[[dataUserData.data.lastName]]</div>-->
+      <div class="textTruncated small">[[dataUserData.data.mail]]</div>
+      <div class="logout"><neocloud-log-out stored-user="{{storedUser}}" logout-url="{{_getDomain()}}/accounts/sign-in" language="{{language}}"></neocloud-log-out></div>
+    </div>
+  </template>
+
+  <script>
+    class NeocloudProfile extends jwtBehavior(Polymer.Element) {
+      static get is() {
+        return 'neocloud-profile';
+      }
+
+      static get properties() {
+        return {
+          language: String
+        }
+      }
+
+      _handleResponseGetUserData() {
+        let language = this.dataUserData.data.language.toLowerCase();
+        this.dispatchEvent(new CustomEvent('setLanguage', { detail: {language: language}, bubbles: true, composed: true }));
+      }
+    }
+    window.customElements.define(NeocloudProfile.is, NeocloudProfile);
+  </script>
+</dom-module>

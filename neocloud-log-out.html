@@ -1,0 +1,63 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+
+<link rel="import" href="neocloud-app-data.html">
+
+<dom-module id="neocloud-log-out">
+  <template>
+    <style>
+      :host {
+        margin: 0;
+        padding: 0;
+      }
+
+      a {
+        color: var(--app-primary-color);
+        display: inline-block;
+        font-size: 14px;
+        text-decoration: none;
+      }
+    </style>
+
+    <iron-localstorage id="userStorage" name="user-storage" value="{{storedUser}}"></iron-localstorage>
+    <neocloud-app-data key="userData" data="{{storedUser}}"></neocloud-app-data>
+    <a href="#" on-tap="logout" onclick="return false"><iron-icon icon="exit-to-app"></iron-icon>{{localize('NEOCLOUD_APP_LOG_OUT_BUTTON_LOG_OUT')}}</a>
+  </template>
+
+  <script>
+    class NeocloudLogOut extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
+      static get is() {
+        return 'neocloud-log-out';
+      }
+
+      static get properties() {
+        return {
+          language : String,
+          storedUser: String,
+          logoutUrl: {
+            type: String,
+            value: ""
+          }
+        }
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.useKeyIfMissing = true;
+        this.loadResources(this.resolveUrl('i18n/neocloud-app'));
+      }
+
+      logout() {
+        let urlRedirect = this.logoutUrl + '?continue=' + encodeURIComponent(window.location.href);
+        // remove user data
+        this.storedUser = null;
+
+        window.location.href = urlRedirect;
+      }
+
+    }
+    window.customElements.define(NeocloudLogOut.is, NeocloudLogOut);
+  </script>
+</dom-module>

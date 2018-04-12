@@ -1,0 +1,62 @@
+<script>
+  /* @polymerMixin */
+  jwtBehavior = function(baseClass) {
+    return class extends baseClass {
+      static get properties() {
+        return {
+          storedUser: String
+        }
+      }
+
+      _getHeaders(storedUser) {
+        if (storedUser != null) {
+          return {
+            'Authorization': 'Bearer ' + storedUser
+          };
+        } else {
+          return ('');
+        }
+      }
+
+      _getDomain() {
+        let url = window.location;
+
+        if ((url.hostname == 'localhost') || (url.hostname == 'localhost')) {
+          return 'https://cloudtest.neogrup.com';
+        } else {
+          return url.protocol + '//' + url.hostname
+        }
+      }
+      
+      _handleErrorAjax(event) {
+        let errorObj = {"hideErrorDesc":false, "errorDesc":"","internalError": 0};
+        this._handleErrorAjaxFillError(event, errorObj);
+        this.errorDesc = errorObj.errorDesc;
+        this.hideErrorDesc = errorObj.hideErrorDesc;
+        if (this.$$('#errorDiv') != null) {
+          this.$$('#errorDiv').scrollIntoView();
+        }
+      }
+
+      _handleErrorAjaxFillError(event, errorObj) {
+        errorObj.internalError = 0
+        errorObj.hideErrorDesc = false;
+        errorObj.errorDesc = "";
+        if (event.detail.request.xhr.response !== null) {
+          errorObj.internalError = event.detail.request.xhr.response.error.code;
+        }
+
+        switch (errorObj.internalError) {
+          case 30999:
+            errorObj.errorDesc = this.localize('LOYALTY_SHOP_UNFOLLOW_DIALOG_MESSAGE_ERROR_PERMISSION');
+            break;
+
+          default:
+            errorObj.errorDesc = this.localize('LOYALTY_SHOP_GET_MESSAGE_ERROR_UNEXPECTED');
+            break;
+        }
+      }
+    }
+  }
+</script>
+  

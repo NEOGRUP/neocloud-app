@@ -1,0 +1,234 @@
+<!-- shared styles for all views -->
+<dom-module id="shared-styles">
+  <template>
+    <style>
+      /************************* Alignments *************************/
+      .center{
+        text-align: center;
+      }
+
+      .left{
+        text-align: left;
+      }
+
+      .right{
+        text-align: right;
+      }
+
+      /************************* Font sizes *************************/
+      .small{
+        font-size: 12px;
+      }
+
+      .medium{
+        font-size: 14px;
+      }
+
+      .large{
+        font-size: 20px;
+      }
+
+      .x-large{
+        font-size: 26px;
+      }
+
+      .bolder {
+        font-weight: bolder;
+      }
+
+      /************************* Icons size *************************/
+      .icon24{
+        height: 24px;
+        width: 24px;
+      }
+
+      .icon32{
+        height: 32px;
+        width: 32px;
+      }
+
+      .icon48{
+        height: 48px;
+        width: 48px;
+      }
+
+
+      /************************* Colors *************************/
+      .amber{
+        color: #FFA000;
+      }
+
+      .black{
+        color: #212121
+      }
+
+      .blue{
+        color: #1976D2;
+      }
+
+      .green{
+        color: #388E3C;
+      }
+
+      .grey {
+        color: #9E9E9E
+      }
+
+      .indigo{
+        color: #303F9F;
+      }
+
+      .orange{
+        color: #F57C00;
+      }
+
+      .red{
+        color: #D32F2F;
+      }
+
+      .teal{
+        color: #00796B;
+      }
+
+      .yellow{
+        color: #FBC02D;
+      }
+
+      /************************* Polymer elements *************************/
+      paper-tooltip{
+        --paper-tooltip:{
+          background-color: var(--app-primary-color);
+          opacity: 1;
+          font-size: 12px;
+          /*max-width: 200px;*/
+          display: block;
+
+        }
+
+      }
+
+      paper-tooltip p{
+        margin: 0;
+        line-height: 15px;
+      }
+
+      paper-spinner{
+        width: 50px;
+        height: 50px;
+        --paper-spinner-layer-1-color: var(--app-accent-color);
+        --paper-spinner-layer-2-color: var(--app-accent-color);
+        --paper-spinner-layer-3-color: var(--app-accent-color);
+        --paper-spinner-layer-4-color: var(--app-accent-color);
+      }
+
+      paper-spinner.dialog{
+        width: 36px;
+        height: 36px;
+        margin-right: 10px;
+      }
+
+      paper-progress {
+        width: 100%;
+        --paper-progress-active-color: var(--app-accent-color);
+        --paper-progress-container-color: var(--app-bg-color);
+        --paper-progress-height: 3px;
+      }
+
+      paper-tabs{
+        --paper-tabs-selection-bar-color: var(--app-accent-color);
+        background-color: var(--app-tabs-color);
+        color: var(--app-primary-color);
+        border-bottom: 1px solid #BDBDBD;
+      }
+
+      paper-tabs paper-tab.iron-selected{
+        color: var(--app-accent-color);
+      }
+
+      paper-fab{
+        --paper-fab-background: var(--app-secondary-color);
+        margin-left: 10px;
+        margin-right: 10px;
+        margin-bottom: 15px;
+        position: fixed;
+        right: 25px;
+        bottom: 25px;
+      }
+
+      paper-card{
+        color: var(--app-primary-color);
+      }
+
+      paper-toggle-button{
+        --paper-toggle-button-checked-button-color: var(--app-accent-color);
+        --paper-toggle-button-checked-bar-color: var(--app-accent-color);
+      }
+
+      paper-button{
+        margin: 10px 5px;
+        background-color: var(--app-secondary-color);
+        color: white;
+      }
+      paper-button.link{
+        margin: 10px 5px;
+        background-color: inherit;
+        color: inherit;
+      }
+
+
+      paper-button.delete{
+        margin: 0;
+        background-color: var(--error-color);
+      }
+
+      paper-button.delete:not([disabled]){
+        margin: 10px 5px;
+        background-color: var(--error-color);
+      }
+
+      /************************* Containers *************************/
+
+      .page-container-main{
+        display: block;
+        padding: 10px;
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+      }
+
+
+
+      /************************* Others *************************/
+      .ellipsis{
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .textTruncated {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+
+      .capitalize:first-letter{
+        text-transform: uppercase;
+      }
+
+      p.alert-error {
+        background: #ffcdd2;
+        border: 1px solid var(--error-color);;
+        border-radius: 3px;
+        font-size: 14px;
+        padding: 10px;
+      }
+
+      p.alert-success {
+        background: #e0f2bc;
+        border: 1px solid #598900;
+        border-radius: 3px;
+        font-size: 14px;
+        padding: 10px;
+      }
+
+    </style>
+  </template>
+</dom-module>

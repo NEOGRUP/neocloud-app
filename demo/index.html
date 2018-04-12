@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>neocloud-app demo</title>
+
+    
+
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Roboto', 'Noto', sans-serif;
+        font-size: 14px;
+        /* line-height: 1.5; */
+        min-height: 100vh;
+        background-color: #eeeeee;
+      }
+    </style>
+
+    <script>
+      window.Polymer = {rootPath: '/demo/'};  
+    </script>
+
+    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
+
+    <link rel="import" href="../neocloud-app.html">
+    <link rel="import" href="../neocloud-app-menu-item.html">
+  </head>
+  <body>
+      <neocloud-app>
+
+        <neocloud-app-menu-item 
+          name="view1"
+          class-name="parentLink"
+          icon="communication:business"
+          text="Custom View 1"
+          slot="menu">
+        </neocloud-app-menu-item>
+
+        <neocloud-app-menu-item 
+          name="view2"
+          class-name="parentLink"
+          icon="account-balance"
+          text="Custom View 2"
+          slot="menu">
+        </neocloud-app-menu-item>
+
+         
+
+
+          
+          <!-- <menu>
+            <item name="view1">View One</item>
+
+            <a name="view1" href="[[rootPath]]view1">View One</a>
+            <a name="view2" href="[[rootPath]]view2">View Two</a>
+            <a name="view3" href="[[rootPath]]view3">View Three</a>
+            <a name="view4" href="[[rootPath]]view4">View Four</a>
+          </menu>
+          <views>
+            <my-view1 name="view1"></my-view1>
+            <my-view2 name="view2"></my-view2>
+            <my-view3 name="view3"></my-view3>
+            <my-view4 name="view4"></my-view4>
+          </views>
+          <title>
+            
+          </title> -->
+        </neocloud-app>
+      <noscript>
+        Please enable JavaScript to view this website.
+      </noscript>
+    </body>
+</html>

@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Polymer",
+            "port": 9229,
+            "protocol": "inspector",
+            "runtimeExecutable": "polymer",
+            "runtimeArgs": [
+                "serve"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Loyalty",
+            "url": "http://localhost:8081/loyalty",      
+            "webRoot": "${workspaceRoot}"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Full-stack",
+            "configurations": [
+                "Polymer",
+                "Loyalty"
+            ]
+        }
+    ]
+}
