@@ -59,15 +59,15 @@
     <div class="page-container-main">
       <div class="page-container">
         <paper-card>
-          <h2>{{localize('LOYALTY_FEEDBACK_TITLE')}}</h2>
-          <p>{{localize('LOYALTY_FEEDBACK_SUBTITLE')}}</p>
+          <h2>{{localize('NEOCLOUD_APP_FEEDBACK_TITLE')}}</h2>
+          <p>{{localize('NEOCLOUD_APP_FEEDBACK_SUBTITLE')}}</p>
 
           <p id="errorDiv" class="alert-error" hidden$="[[hideErrorDesc]]">[[errorDesc]]</p>
 
-          <paper-textarea id="message" label="{{localize('LOYALTY_FEEDBACK_INPUT_MESSAGE')}}" required error-message="{{localize('LOYALTY_FEEDBACK_INPUT_ERROR_REQUIRED')}}" value="{{dataFeedback.message}}" rows="2"></paper-textarea>
+          <paper-textarea id="message" label="{{localize('NEOCLOUD_APP_FEEDBACK_INPUT_MESSAGE')}}" required error-message="{{localize('NEOCLOUD_APP_FEEDBACK_INPUT_ERROR_REQUIRED')}}" value="{{dataFeedback.message}}" rows="2"></paper-textarea>
 
           <div class="divButtons">
-            <paper-button raised disabled$="[[loading]]" on-tap="_postFeedback">{{localize('LOYALTY_FEEDBACK_BUTTON_SEND')}}</paper-button>
+            <paper-button raised disabled$="[[loading]]" on-tap="_postFeedback">{{localize('NEOCLOUD_APP_FEEDBACK_BUTTON_SEND')}}</paper-button>
           </div>
         </paper-card>
       </div>
@@ -75,7 +75,7 @@
 
   </template>
   <script>
-    class NeocloudFeedback extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], loyaltyBehavior(jwtBehavior(Polymer.Element))) {
+    class NeocloudFeedback extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], neocloudBehavior(jwtBehavior(Polymer.Element))) {
       static get is() {
         return 'neocloud-feedback';
       }
@@ -117,7 +117,7 @@
       connectedCallback() {
         super.connectedCallback();
         this.useKeyIfMissing = true;
-        this.loadResources(this.resolveUrl('/api/v1/i18n/loyalty'));
+        this.loadResources(this.resolveUrl('i18n/neocloud-app'));
         this.dispatchEvent(new CustomEvent('loaded', {bubbles: true, composed: true }));
       }
 
@@ -135,7 +135,7 @@
         this.dataFeedback = {};
         this.hideErrorDesc = true;
         this.errorDesc = "";
-        this.fire('openToast',{text: this.localize('LOYALTY_FEEDBACK_MESSAGE_SUCCESS')});
+        this.fire('openToast',{text: this.localize('NEOCLOUD_APP_FEEDBACK_MESSAGE_SUCCESS')});
       }
     }
     window.customElements.define(NeocloudFeedback.is, NeocloudFeedback);

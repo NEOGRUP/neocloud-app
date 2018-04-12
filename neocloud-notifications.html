@@ -113,8 +113,8 @@
                   <div class="message">[[item.customMessage]]</div>
 
                   <div class="notification-actions-buttons" hidden$="[[_hideDeclineButton(item.ambit)]]">
-                    <paper-button raised class="delete" disabled$="[[loading]]" on-tap="_declineInvitation">{{localize('LOYALTY_NOTIFICATIONS_BUTTON_REJECT')}}</paper-button>
-                    <paper-button raised dialog-dismiss disabled$="[[loading]]" on-tap="_acceptInvitation">{{localize('LOYALTY_NOTIFICATIONS_BUTTON_ACCEPT')}}</paper-button>
+                    <paper-button raised class="delete" disabled$="[[loading]]" on-tap="_declineInvitation">{{localize('NEOCLOUD_APP_NOTIFICATIONS_BUTTON_REJECT')}}</paper-button>
+                    <paper-button raised dialog-dismiss disabled$="[[loading]]" on-tap="_acceptInvitation">{{localize('NEOCLOUD_APP_NOTIFICATIONS_BUTTON_ACCEPT')}}</paper-button>
                   </div>
 
                   <div class="message small grey capitalize">[[_formatDateTimeFromNow(item.sysData.created,language)]] [[item.sender]]</div>
@@ -129,7 +129,7 @@
           <template is="dom-if" if="{{!renderedCount}}">
             <paper-card>
               <paper-item>
-              {{localize('LOYALTY_NOTIFICATIONS_MESSAGE_WITHOUT_NOTIFICATIONS')}}
+              {{localize('NEOCLOUD_APP_NOTIFICATIONS_MESSAGE_WITHOUT_NOTIFICATIONS')}}
               </paper-item>
             </paper-card>
           </template>
@@ -172,7 +172,7 @@
       connectedCallback() {
         super.connectedCallback();
         this.useKeyIfMissing = true;
-        this.loadResources(this.resolveUrl('/api/v1/i18n/loyalty'));
+        this.loadResources(this.resolveUrl('i18n/neocloud-app'));
         this.dispatchEvent(new CustomEvent('loaded', {bubbles: true, composed: true }));
       }
 
@@ -248,7 +248,7 @@
 
       _handleRespondInvitationResponse(event) {
         this.refresh();
-        this.dispatchEvent(new CustomEvent('openToast', {detail: {text: this.localize('LOYALTY_NOTIFICATIONS_MESSAGE_SUCCESS')}, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('openToast', {detail: {text: this.localize('NEOCLOUD_APP_NOTIFICATIONS_MESSAGE_SUCCESS')}, bubbles: true, composed: true }));
         this.dispatchEvent(new CustomEvent('updateNotifications', {bubbles: true, composed: true }));
 
         let response = this.responseInvitation.data;

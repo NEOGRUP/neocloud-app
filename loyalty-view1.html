@@ -1,0 +1,27 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<dom-module id="loyalty-view1">
+  <template>
+    <style>
+      :host{
+        color: red;
+        background-color: aquamarine;
+      }
+    </style>
+  
+    <h1>View One Static</h1>
+    test
+  </template>
+
+  <script>
+    class LoyaltyView1 extends Polymer.Element {
+      static get is() { return 'loyalty-view1'; }
+      connectedCallback() {
+        super.connectedCallback();
+        console.log('test static');
+      }
+    }
+
+    window.customElements.define(LoyaltyView1.is, LoyaltyView1);
+  </script>
+</dom-module>

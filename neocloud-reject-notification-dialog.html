@@ -52,18 +52,18 @@
 
     <paper-dialog id="rejectNotificationDialog" modal entry-animation="scale-up-animation">
       <div class="header">
-        <iron-icon icon="warning"></iron-icon><h3>{{localize('LOYALTY_NOTIFICATIONS_REJECT_NOTIFICATION_DIALOG_TITLE')}}</h3>
+        <iron-icon icon="warning"></iron-icon><h3>{{localize('NEOCLOUD_APPNOTIFICATIONS_REJECT_NOTIFICATION_DIALOG_TITLE')}}</h3>
       </div>
       <div class="content">
-        <p>{{localize('LOYALTY_NOTIFICATIONS_REJECT_NOTIFICATION_DIALOG_SUBTITLE')}}</p>
+        <p>{{localize('NEOCLOUD_APPNOTIFICATIONS_REJECT_NOTIFICATION_DIALOG_SUBTITLE')}}</p>
         <p id="errorDiv" class="alert-error" hidden$="[[hideErrorDesc]]">[[errorDesc]]</p>
       </div>
       <div class="buttons">
         <div hidden$="{{!loading}}">
           <paper-spinner class="dialog" active></paper-spinner>
         </div>
-        <paper-button raised dialog-dismiss disabled$="[[loading]]">{{localize('LOYALTY_NOTIFICATIONS_REJECT_NOTIFICATION_DIALOG_BUTTON_NO')}}</paper-button>
-        <paper-button raised disabled$="[[loading]]" on-tap="_rejectNotification">{{localize('LOYALTY_NOTIFICATIONS_REJECT_NOTIFICATION_DIALOG_BUTTON_YES')}}</paper-button>
+        <paper-button raised dialog-dismiss disabled$="[[loading]]">{{localize('NEOCLOUD_APPNOTIFICATIONS_REJECT_NOTIFICATION_DIALOG_BUTTON_NO')}}</paper-button>
+        <paper-button raised disabled$="[[loading]]" on-tap="_rejectNotification">{{localize('NEOCLOUD_APPNOTIFICATIONS_REJECT_NOTIFICATION_DIALOG_BUTTON_YES')}}</paper-button>
       </div>
     </paper-dialog>
 
@@ -110,7 +110,7 @@
       connectedCallback() {
         super.connectedCallback();
         this.useKeyIfMissing = true;
-        this.loadResources(this.resolveUrl('/api/v1/i18n/loyalty'));
+        this.loadResources(this.resolveUrl('i18n/neocloud-app'));
       }
 
       open(){
@@ -136,7 +136,7 @@
         this.hideErrorDesc = true;
         this.errorDesc = "";
         this.$.rejectNotificationDialog.close();
-        this.dispatchEvent(new CustomEvent('openToast', {detail: {text: this.localize('LOYALTY_NOTIFICATIONS_MESSAGE_SUCCESS')}, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('openToast', {detail: {text: this.localize('NEOCLOUD_APPNOTIFICATIONS_MESSAGE_SUCCESS')}, bubbles: true, composed: true }));
         this.dispatchEvent(new CustomEvent('updateNotifications', {bubbles: true, composed: true }));
         this.dispatchEvent(new CustomEvent('notificationRejected', {bubbles: true, composed: true }));
       }

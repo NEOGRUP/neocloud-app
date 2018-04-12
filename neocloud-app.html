@@ -275,6 +275,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             fallback-selection="view404"
             role="main">
           
+
+          <slot id="views" name="views" slot="views"></slot>
+
           <neocloud-notifications name="notifications" route="{{subroute}}" language="{{language}}"></neocloud-notifications>
           <neocloud-contact name="contact" route="{{route}}" language="{{language}}"></neocloud-contact>
           <neocloud-feedback name="feedback" route="{{route}}" language="{{language}}"  url-feedback="{{urlFeedback}}"></neocloud-feedback>
@@ -348,9 +351,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             type: String,
             value: "shops"
           },
-          // This shouldn't be neccessary, but the Analyzer isn't picking up
-          // Polymer.Element#rootPath
           rootPath: String,
+          neocloudAppPages:{
+            type: Array,
+            value: ['contact','feedback','notifications','view404']
+          } 
         };
       }
 
@@ -454,8 +459,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.page = page
         }
         else{
-          page = 'contact';
-          // this.set('route.path', '/loyalty/accounts');
+          this.set('route.path', [[this.rootPath]] + 'notifications');
         }
 
         // Close a non-persistent drawer when the page & route are changed.
@@ -465,8 +469,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _pageChanged(page) {
-        // Load page import on demand. Show 404 page if fails
-        const resolvedPageUrl = this.resolveUrl('loyalty-' + page + '.html');
+        // Define pages of component
+        let dynamicPage = true;
+        let resolvedPageUrl = "";
+
+        for (let i=0; i<this.neocloudAppPages.length; i++){
+          if (page===this.neocloudAppPages[i]){
+            dynamicPage = false;
+            break;
+          }
+        }
+
+        if (dynamicPage){
+          console.log('dynamic');
+          resolvedPageUrl = this.resolveUrl('loyalty-' + page + '.html');
+          
+        } else{
+          console.log('static');
+          resolvedPageUrl = this.resolveUrl('neocloud-' + page + '.html');
+        }
+
         Polymer.importHref(
             resolvedPageUrl,
             null,
@@ -514,7 +536,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _showNotifications(){
         this._updateDataNotificationsCountNow();
-        this.set('route.path', '/loyalty/notifications');
+        this.set('route.path', this.rootPath + 'notifications');
         this._refresh();
       }
 
@@ -541,11 +563,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _refresh(){
-        //Polymer.dom(this.root).querySelector('loyalty-notifications').refresh();
-        // equivalent
-        if(typeof this.shadowRoot.querySelector('loyalty-' + this.page).refresh != 'undefined') {
-          this.shadowRoot.querySelector('loyalty-' + this.page).refresh();
+        let dynamicPage = true;
+        let resolvedPageUrl = "";
+
+        for (let i=0; i<this.neocloudAppPages.length; i++){
+          if (this.page===this.neocloudAppPages[i]){
+            dynamicPage = false;
+            break;
+          }
         }
+
+        if (dynamicPage){
+          console.log('dynamic refresh!');
+        } else{
+          if(typeof this.shadowRoot.querySelector('neocloud-' + this.page).refresh != 'undefined') {
+            this.shadowRoot.querySelector('neocloud-' + this.page).refresh();
+          }
+        }
+        
         this._updateDataNotificationsCountNow();
       }
 
@@ -555,7 +590,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _feedback(){
         this.urlFeedback = window.location.href;
-        this.set('route.path', '/loyalty/feedback');
+        this.set('route.path', this.rootPath + 'feedback');
       }
 
        _openRejectNotification(e){
