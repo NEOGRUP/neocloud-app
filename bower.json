@@ -1,6 +1,16 @@
 {
   "name": "neocloud-app",
   "main": "neocloud-app.html",
+  "version": "0.0.1",
+  "description": "Polymer component. Template for Neocloud web applications.",
+  "authors": [
+    "edgar.piera@neogrup.com"
+  ],
+  "keywords": [
+    "web-components",
+    "polymer",
+    "neocloud"
+  ],
   "dependencies": {
     "app-layout": "PolymerElements/app-layout#^2.0.0",
     "app-route": "PolymerElements/app-route#^2.0.0",
